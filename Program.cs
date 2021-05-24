@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Text;
+using System.Threading;
 
 namespace TILab4 {
     class Program {
@@ -42,9 +44,25 @@ namespace TILab4 {
                         FileMode.Create, FileAccess.Write))) {
 
                     FileStream source = binaryReader.BaseStream as FileStream;
+
+                    TimerCallback tm = new TimerCallback((obj) => {
+                        Console.CursorLeft = 0;
+                        int p = (int)(source.Position * 100 / source.Length);
+                        StringBuilder stringBuilder = new StringBuilder("|");
+                        stringBuilder.Append(new string('=', p));
+                        stringBuilder.Append(new string(' ', 100 - p));
+                        stringBuilder.Append($"| {p} %");
+                        Console.Write(stringBuilder);
+                    });
+                    Timer timer = new Timer(tm, null, 0, 100);
+
                     while (source.Position < source.Length) {
                         binaryWriter.Write((byte)(binaryReader.ReadByte() ^ generatorGeffe.Next()));
                     }
+
+                    timer.Dispose();
+                    tm(null);
+                    Console.WriteLine();
                 }
             }
         }
